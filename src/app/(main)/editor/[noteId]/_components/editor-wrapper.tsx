@@ -109,7 +109,7 @@ const EditorWrapper = ({
     <div
       className={cn(
         "prose prose-stone dark:prose-invert max-w-full lg:py-8",
-        isZenMode && "prose-lg",
+        isZenMode && "prose-lg fixed inset-0 bg-background z-50 overflow-auto p-4 md:p-8 lg:p-12",
       )}
     >
       <AnimatePresence>
@@ -118,7 +118,7 @@ const EditorWrapper = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed top-4 right-4 z-50"
+            className="fixed top-4 right-4 z-[60]"
           >
             <Button
               variant="ghost"
@@ -130,7 +130,7 @@ const EditorWrapper = ({
           </motion.div>
         )}
       </AnimatePresence>
-      <div id={EDITOR_HOLDER_ID} />
+      <div id={EDITOR_HOLDER_ID} className={cn(isZenMode && "max-w-3xl mx-auto")} />
     </div>
   );
 };

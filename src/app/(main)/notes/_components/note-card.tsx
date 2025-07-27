@@ -347,7 +347,7 @@ function NoteCardComponent({ note }: NoteCardProps) {
             className="block h-full flex-grow p-6 pt-0"
           >
             <CardContent className="space-y-4 p-0">
-              <p className="line-clamp-2 text-sm text-muted-foreground">
+              <p className="line-clamp-3 text-sm text-muted-foreground">
                 {contentPreview || "কোনও অতিরিক্ত বিষয়বস্তু নেই।"}
               </p>
               {note.tags && note.tags.length > 0 && (

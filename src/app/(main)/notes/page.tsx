@@ -181,7 +181,9 @@ export default function NotesPage() {
         className="hidden"
         accept=".json"
       />
-      <ExpandableFab actions={fabActions} />
+      <div className="hidden lg:block">
+        <ExpandableFab actions={fabActions} />
+      </div>
     </div>
   );
 }
