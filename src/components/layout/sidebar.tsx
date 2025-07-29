@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Settings, Trash2, BarChart } from "lucide-react";
+import {
+  Home,
+  Settings,
+  Trash2,
+  LayoutDashboard,
+  Notebook,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/use-settings";
 
 const navItems = [
-  { href: "/notes", label: "নোট সমূহ", icon: Home },
-  { href: "/dashboard", label: "ড্যাশবোর্ড", icon: BarChart },
+  { href: "/notes", label: "নোট সমূহ", icon: Notebook },
+  { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard },
   { href: "/trash", label: "ট্র্যাশ", icon: Trash2 },
   { href: "/settings", label: "সেটিংস", icon: Settings },
 ];
@@ -22,9 +28,12 @@ export default function Sidebar() {
     <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
       <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r bg-background px-6 pb-4">
         <div className="flex h-16 shrink-0 items-center">
-          <h1 className={cn("text-2xl font-bold tracking-tight", fontClass)}>
-            আমার নোট
-          </h1>
+          <Link href="/notes" className="flex items-center gap-2">
+            <Home className="h-8 w-8 text-primary" />
+            <h1 className={cn("text-2xl font-bold tracking-tight", fontClass)}>
+              আমার নোট
+            </h1>
+          </Link>
         </div>
         <nav className="flex flex-1 flex-col">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">

@@ -18,7 +18,11 @@ function StatCard({
   };
 
   return (
-    <motion.div variants={cardVariants}>
+    <motion.div
+      variants={cardVariants}
+      whileHover={{ scale: 1.05, y: -5 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">{title}</CardTitle>

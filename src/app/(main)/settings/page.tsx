@@ -23,7 +23,7 @@ import { clearAllNotes, exportNotes, importNotes } from "@/lib/storage";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useNotes } from "@/stores/use-notes";
-import { Upload, Download, Trash } from "lucide-react";
+import { Upload, Download, Trash, Palette, Font } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   AlertDialog,
@@ -115,7 +115,10 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="theme-select">থিম</Label>
+              <Label htmlFor="theme-select" className="flex items-center">
+                <Palette className="mr-2 h-4 w-4" />
+                থিম
+              </Label>
               <Select onValueChange={setTheme} defaultValue="system">
                 <SelectTrigger id="theme-select">
                   <SelectValue placeholder="একটি থিম নির্বাচন করুন" />
@@ -128,7 +131,10 @@ export default function SettingsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="font-select">ফন্ট</Label>
+              <Label htmlFor="font-select" className="flex items-center">
+                <Font className="mr-2 h-4 w-4" />
+                ফন্ট
+              </Label>
               <Select
                 value={font}
                 onValueChange={(value) => setSetting("font", value)}

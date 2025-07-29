@@ -43,12 +43,17 @@ function NotesListComponent({ notes }: NotesListProps) {
       className="space-y-3"
     >
       {notes.map((note) => (
-        <motion.div key={note.id} variants={itemVariants}>
+        <motion.div
+          key={note.id}
+          variants={itemVariants}
+          whileHover={{ x: 5 }}
+          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+        >
           <Link
             href={`/editor/${note.id}`}
             className={cn(
               "block rounded-lg p-4 transition-colors hover:bg-accent",
-              note.isPinned ? "border-primary/30 bg-primary/5" : "border",
+              note.isPinned ? "border-primary/30 bg-primary/5 border" : "border",
               fontClass,
             )}
           >

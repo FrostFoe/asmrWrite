@@ -225,14 +225,16 @@ function NoteCardComponent({ note }: NoteCardProps) {
         initial="hidden"
         animate="visible"
         exit="exit"
-        transition={{ duration: 0.3 }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
         whileHover={{ translateY: -5, scale: 1.02 }}
         className="h-full"
       >
         <Card
           className={cn(
-            "flex h-full flex-col border-2 transition-all duration-300 ease-in-out hover:shadow-lg",
-            note.isPinned ? "border-primary/50" : "border-transparent",
+            "flex h-full flex-col border-2 transition-all duration-300 ease-in-out hover:shadow-2xl",
+            note.isPinned
+              ? "border-primary/50 shadow-primary/20"
+              : "border-transparent",
             fontClass,
           )}
         >
