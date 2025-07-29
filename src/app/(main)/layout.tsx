@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/sidebar";
 import ScrollProgress from "@/components/ui/scroll-progress";
@@ -9,9 +9,9 @@ import { useSettingsStore } from "@/stores/use-settings";
 import { useNotes } from "@/stores/use-notes";
 import { AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
-import BottomNav from "@/components/layout/bottom-nav";
 import { ExpandableFab } from "@/components/ui/expandable-fab";
 import { toast } from "sonner";
+import BottomNav from "@/components/layout/bottom-nav";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const font = useSettingsStore((state) => state.font);
