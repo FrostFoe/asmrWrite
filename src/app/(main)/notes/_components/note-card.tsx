@@ -226,7 +226,6 @@ function NoteCardComponent({ note }: NoteCardProps) {
         animate="visible"
         exit="exit"
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
-        whileHover={{ translateY: -5, scale: 1.02 }}
         className="h-full"
       >
         <Card
