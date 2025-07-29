@@ -141,11 +141,6 @@ export default function NotesPage() {
     return <Loading />;
   }
 
-  const fabActions = [
-    { label: "নতুন নোট", action: handleNewNote, icon: "FilePlus" },
-    { label: "নোট ইম্পোর্ট করুন", action: handleImportClick, icon: "Upload" },
-  ];
-
   return (
     <div
       className={cn(
@@ -181,9 +176,6 @@ export default function NotesPage() {
         className="hidden"
         accept=".json"
       />
-      <div className="hidden lg:block">
-        <ExpandableFab actions={fabActions} />
-      </div>
     </div>
   );
 }
