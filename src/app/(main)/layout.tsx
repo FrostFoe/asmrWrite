@@ -12,15 +12,13 @@ import { usePathname } from "next/navigation";
 import { ExpandableFab } from "@/components/ui/expandable-fab";
 import { toast } from "sonner";
 import BottomNav from "@/components/layout/bottom-nav";
-import { importNotes } from "@/lib/storage";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const font = useSettingsStore((state) => state.font);
   const pathname = usePathname();
   const isEditorPage = pathname.startsWith("/editor/");
   const router = useRouter();
-  const { createNote, addImportedNotes } = useNotes();
-  const importInputRef = React.useRef<HTMLInputElement>(null);
+  const { createNote } = useNotes();
 
   const handleNewNote = useCallback(async () => {
     try {
@@ -35,46 +33,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [createNote, router]);
 
-  const handleImportClick = useCallback(() => {
-    importInputRef.current?.click();
-  }, []);
-
-  const handleFileImport = useCallback(
-    async (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        try {
-          const imported = await importNotes(file);
-          addImportedNotes(imported);
-          toast.success(
-            `${imported.length} টি নোট সফলভাবে ইমপোর্ট করা হয়েছে!`,
-          );
-        } catch (error) {
-          toast.error(
-            "নোট ইম্পোর্ট করতে ব্যর্থ হয়েছে। ফাইল ফরম্যাট সঠিক কিনা তা পরীক্ষা করুন।",
-          );
-          console.error(error);
-        } finally {
-          if (importInputRef.current) {
-            importInputRef.current.value = "";
-          }
-        }
-      }
-    },
-    [addImportedNotes],
-  );
-
-  const fabActions = [
-    { label: "নতুন নোট", action: handleNewNote, icon: "FilePlus" },
-    { label: "নোট ইম্পোর্ট করুন", action: handleImportClick, icon: "Upload" },
-  ];
-
   return (
     <div className="flex h-full bg-background">
       <ScrollProgress />
-      <AnimatePresence>
-        {!isEditorPage && <Sidebar />}
-      </AnimatePresence>
+      <AnimatePresence>{!isEditorPage && <Sidebar />}</AnimatePresence>
       <div className={cn("flex-1", !isEditorPage && "lg:pl-72")}>
         <main className="flex-1 overflow-y-auto pb-24 lg:pb-0 h-full">
           {children}
@@ -83,18 +45,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <AnimatePresence>
         {!isEditorPage && (
           <>
-            <BottomNav actions={fabActions} />
-            <ExpandableFab actions={fabActions} />
+            <BottomNav onNewNote={handleNewNote} />
+            <ExpandableFab onNewNote={handleNewNote} />
           </>
         )}
       </AnimatePresence>
-      <input
-        type="file"
-        ref={importInputRef}
-        onChange={handleFileImport}
-        className="hidden"
-        accept=".json"
-      />
     </div>
   );
 }
