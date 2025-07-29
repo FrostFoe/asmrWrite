@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useRef } from "react";
+import React, { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/layout/sidebar";
 import ScrollProgress from "@/components/ui/scroll-progress";
@@ -36,8 +36,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-full bg-background">
       <ScrollProgress />
-      <AnimatePresence>{!isEditorPage && <Sidebar />}</AnimatePresence>
-      <div className={cn("flex-1", !isEditorPage && "lg:pl-72")}>
+      <Sidebar />
+      <div className={cn("flex-1", "lg:pl-72")}>
         <main className="flex-1 overflow-y-auto pb-24 lg:pb-0 h-full">
           {children}
         </main>
