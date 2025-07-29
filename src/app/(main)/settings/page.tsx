@@ -23,7 +23,7 @@ import { clearAllNotes, exportNotes, importNotes } from "@/lib/storage";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useNotes } from "@/stores/use-notes";
-import { Upload, Download, Trash, Palette, Font } from "lucide-react";
+import { Upload, Download, Trash, Palette, Baseline } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   AlertDialog,
@@ -132,7 +132,7 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="font-select" className="flex items-center">
-                <Font className="mr-2 h-4 w-4" />
+                <Baseline className="mr-2 h-4 w-4" />
                 ফন্ট
               </Label>
               <Select
