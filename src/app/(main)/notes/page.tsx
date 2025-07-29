@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSettingsStore } from "@/stores/use-settings";
 import { useNotes } from "@/stores/use-notes";
@@ -13,8 +12,8 @@ import { NotesGrid } from "./_components/notes-grid";
 import { NotesList } from "./_components/notes-list";
 import NotesHeader, { SortOption, ViewMode } from "./_components/notes-header";
 import EmptyState from "./_components/empty-state";
-import { ExpandableFab } from "@/components/ui/expandable-fab";
 import { Note } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export default function NotesPage() {
   const router = useRouter();

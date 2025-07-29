@@ -4,7 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
     <div className="flex h-full bg-background">
-      <Sidebar />
+      {/* The onNewNote prop is a dummy function here as it's not needed for the skeleton */}
+      <Sidebar onNewNote={() => {}} /> 
       <div className="flex-1 lg:pl-72">
         <div className="h-full space-y-8 p-4 sm:p-6 lg:p-8">
           <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Home,
-  Settings,
-  Trash2,
-  LayoutDashboard,
   Notebook,
+  LayoutDashboard,
+  Trash2,
+  Settings,
+  Home,
+  Plus,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/use-settings";
+import { Button } from "../ui/button";
 
 const navItems = [
   { href: "/notes", label: "নোট সমূহ", icon: Notebook },
@@ -19,54 +22,99 @@ const navItems = [
   { href: "/settings", label: "সেটিংস", icon: Settings },
 ];
 
-export default function Sidebar() {
+const NavLink = ({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+}) => {
   const pathname = usePathname();
+  const isActive =
+    (href === "/notes" &&
+      (pathname === "/notes" || pathname.startsWith("/editor"))) ||
+    (href !== "/notes" && pathname.startsWith(href));
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group flex flex-col items-center gap-1 rounded-md p-2 text-xs font-medium leading-6 transition-colors lg:flex-row lg:gap-x-3 lg:p-2 lg:text-sm",
+        isActive
+          ? "text-primary lg:bg-accent lg:text-accent-foreground"
+          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+      )}
+    >
+      <Icon className="h-5 w-5 shrink-0 lg:h-6 lg:w-6" />
+      <span className="lg:block">{label}</span>
+    </Link>
+  );
+};
+
+export default function Sidebar({ onNewNote }: { onNewNote: () => void }) {
   const font = useSettingsStore((state) => state.font);
   const fontClass = font.split(" ")[0];
 
   return (
-    <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-      <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r bg-background px-6 pb-4">
-        <div className="flex h-16 shrink-0 items-center">
-          <Link href="/notes" className="flex items-center gap-2">
-            <Home className="h-8 w-8 text-primary" />
-            <h1 className={cn("text-2xl font-bold tracking-tight", fontClass)}>
-              আমার নোট
-            </h1>
-          </Link>
-        </div>
-        <nav className="flex flex-1 flex-col">
-          <ul role="list" className="flex flex-1 flex-col gap-y-7">
-            <li>
-              <ul role="list" className="-mx-2 space-y-1">
-                {navItems.map((item) => {
-                  const isActive =
-                    (item.href === "/notes" &&
-                      (pathname === "/notes" || pathname.startsWith("/editor"))) ||
-                    (item.href !== "/notes" && pathname.startsWith(item.href));
-
-                  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r bg-background px-6 pb-4">
+          <div className="flex h-16 shrink-0 items-center">
+            <Link href="/notes" className="flex items-center gap-2">
+              <Home className="h-8 w-8 text-primary" />
+              <h1 className={cn("text-2xl font-bold tracking-tight", fontClass)}>
+                আমার নোট
+              </h1>
+            </Link>
+          </div>
+          <nav className="flex flex-1 flex-col">
+            <ul role="list" className="flex flex-1 flex-col gap-y-7">
+              <li>
+                <Button onClick={onNewNote} size="lg" className="w-full">
+                  <Plus className="mr-2 h-4 w-4" />
+                  নতুন নোট
+                </Button>
+              </li>
+              <li>
+                <ul role="list" className="-mx-2 space-y-1">
+                  {navItems.map((item) => (
                     <li key={item.label}>
-                      <Link
-                        href={item.href}
-                        className={cn(
-                          "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6",
-                          isActive
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                        )}
-                      >
-                        <item.icon className="h-6 w-6 shrink-0" />
-                        {item.label}
-                      </Link>
+                      <NavLink {...item} />
                     </li>
-                  );
-                })}
-              </ul>
-            </li>
-          </ul>
-        </nav>
+                  ))}
+                </ul>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
+
+      {/* Mobile Bottom Nav */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background/80 backdrop-blur-sm lg:hidden">
+        <div className="flex h-16 items-center justify-around pb-[env(safe-area-inset-bottom)]">
+          {navItems.slice(0, 2).map((item) => (
+            <NavLink key={item.label} {...item} />
+          ))}
+          <div className="relative -top-4">
+            <motion.div whileTap={{ scale: 0.95 }}>
+              <Button
+                className="h-16 w-16 rounded-full bg-primary shadow-lg hover:bg-primary/90"
+                size="icon"
+                onClick={onNewNote}
+                aria-label="Create new note"
+              >
+                <Plus className="h-8 w-8" />
+              </Button>
+            </motion.div>
+          </div>
+          {navItems.slice(2).map((item) => (
+            <NavLink key={item.label} {...item} />
+          ))}
+        </div>
       </div>
-    </aside>
+    </>
   );
 }
