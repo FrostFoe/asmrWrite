@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
@@ -109,9 +110,6 @@ function PasscodeDialog({
 }
 
 export default function NotesPage() {
-  const router = useRouter();
-  const { font, passcode, setSetting } = useSettingsStore();
-
   const {
     notes: initialNotes,
     isLoading,
@@ -121,6 +119,8 @@ export default function NotesPage() {
     addImportedNotes,
     updateNote,
   } = useNotes();
+  const router = useRouter();
+  const { font, passcode, setSetting } = useSettingsStore();
 
   const [sortOption, setSortOption] = useState<SortOption>("updatedAt-desc");
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,12 +133,16 @@ export default function NotesPage() {
   const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
 
   const importInputRef = useRef<HTMLInputElement>(null);
-
+  
   useEffect(() => {
     if (!hasFetched) {
       fetchNotes();
     }
   }, [fetchNotes, hasFetched]);
+
+  if (isLoading && !hasFetched) {
+    return <Loading />;
+  }
 
   const handleNewNote = useCallback(async () => {
     try {
@@ -187,22 +191,17 @@ export default function NotesPage() {
       const note = initialNotes.find((n) => n.id === noteId);
       if (!note) return;
 
-      // If note is already unlocked, just run callback
       if (!note.isLocked) {
         callback();
         return;
       }
 
-      // If note is locked, prompt for passcode
       if (!passcode) {
-        // No passcode set, must set one first.
-        // This case is handled by the lock button, but as a fallback.
         toast.error("প্রথমে একটি পাসকোড সেট করুন।");
         return;
       }
       setCurrentNoteId(noteId);
       setPasscodeCallback(() => () => {
-        // on success
         if (note.isLocked) {
           updateNote(noteId, { isLocked: false });
           toast.success("নোটটি আনলক করা হয়েছে।");
@@ -213,27 +212,24 @@ export default function NotesPage() {
     },
     [initialNotes, passcode, updateNote],
   );
-  
+
   const handleLockRequest = useCallback(
     (noteId: string, callback: () => void) => {
-        setCurrentNoteId(noteId);
-        if (passcode) {
-            // Passcode exists, just execute the callback which will toggle lock state
-            callback();
-        } else {
-            // No passcode, must set one
-            setPasscodeCallback(() => () => {
-                callback();
-            });
-            setIsPasscodeDialogOpen(true);
-        }
+      setCurrentNoteId(noteId);
+      if (passcode) {
+        callback();
+      } else {
+        setPasscodeCallback(() => () => {
+          callback();
+        });
+        setIsPasscodeDialogOpen(true);
+      }
     },
     [passcode],
-);
+  );
 
   const handlePasscodeConfirm = (enteredPasscode: string) => {
     if (passcode) {
-      // Verifying existing passcode
       if (enteredPasscode === passcode) {
         passcodeCallback?.();
         toast.success("সঠিক পাসকোড!");
@@ -241,7 +237,6 @@ export default function NotesPage() {
         toast.error("ভুল পাসকোড!");
       }
     } else {
-      // Setting new passcode
       setSetting("passcode", enteredPasscode);
       passcodeCallback?.();
       toast.success("পাসকোড সফলভাবে সেট করা হয়েছে!");
@@ -276,12 +271,16 @@ export default function NotesPage() {
         keyof Note,
         "asc" | "desc",
       ];
-      const valA = a[key] || 0;
-      const valB = b[key] || 0;
+      let valA = a[key] as any;
+      let valB = b[key] as any;
+
+      if(key === 'charCount' && valA === undefined) valA = 0;
+      if(key === 'charCount' && valB === undefined) valB = 0;
 
       if (key === "title") {
-        return String(valA).localeCompare(String(valB));
+        return String(valA).localeCompare(String(valB)) * (order === 'asc' ? 1 : -1);
       }
+      
       if (
         (key === "createdAt" || key === "updatedAt") &&
         (typeof valA === "number" || typeof valA === "string") &&
@@ -304,20 +303,19 @@ export default function NotesPage() {
     });
   }, [filteredNotes, sortOption]);
 
-  if (isLoading && !hasFetched) {
-    return <Loading />;
-  }
-
-  const onUnlockHandler = useCallback((noteId: string, cb: () => void) => {
-      const note = initialNotes.find(n => n.id === noteId);
+  const onUnlockHandler = useCallback(
+    (noteId: string, cb: () => void) => {
+      const note = initialNotes.find((n) => n.id === noteId);
       if (!note) return;
 
-      if(note.isLocked) {
+      if (note.isLocked) {
         handleUnlockRequest(noteId, cb);
       } else {
         handleLockRequest(noteId, cb);
       }
-  }, [initialNotes, handleUnlockRequest, handleLockRequest]);
+    },
+    [initialNotes, handleUnlockRequest, handleLockRequest],
+  );
 
   return (
     <div
