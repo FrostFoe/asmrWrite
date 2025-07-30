@@ -119,6 +119,17 @@ export default function NotesPage() {
     addImportedNotes,
     updateNote,
   } = useNotes();
+  
+  useEffect(() => {
+    if (!hasFetched) {
+      fetchNotes();
+    }
+  }, [fetchNotes, hasFetched]);
+
+  if (isLoading && !hasFetched) {
+    return <Loading />;
+  }
+
   const router = useRouter();
   const { font, passcode, setSetting } = useSettingsStore();
 
@@ -134,16 +145,6 @@ export default function NotesPage() {
 
   const importInputRef = useRef<HTMLInputElement>(null);
   
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchNotes();
-    }
-  }, [fetchNotes, hasFetched]);
-
-  if (isLoading && !hasFetched) {
-    return <Loading />;
-  }
-
   const handleNewNote = useCallback(async () => {
     try {
       const noteId = await createNote();
