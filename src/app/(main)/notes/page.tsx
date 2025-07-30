@@ -119,20 +119,8 @@ export default function NotesPage() {
     addImportedNotes,
     updateNote,
   } = useNotes();
-  
-  useEffect(() => {
-    if (!hasFetched) {
-      fetchNotes();
-    }
-  }, [fetchNotes, hasFetched]);
-
-  if (isLoading && !hasFetched) {
-    return <Loading />;
-  }
-
   const router = useRouter();
   const { font, passcode, setSetting } = useSettingsStore();
-
   const [sortOption, setSortOption] = useState<SortOption>("updatedAt-desc");
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -142,9 +130,14 @@ export default function NotesPage() {
     (() => void) | null
   >(null);
   const [currentNoteId, setCurrentNoteId] = useState<string | null>(null);
-
   const importInputRef = useRef<HTMLInputElement>(null);
-  
+
+  useEffect(() => {
+    if (!hasFetched) {
+      fetchNotes();
+    }
+  }, [fetchNotes, hasFetched]);
+
   const handleNewNote = useCallback(async () => {
     try {
       const noteId = await createNote();
@@ -317,6 +310,10 @@ export default function NotesPage() {
     },
     [initialNotes, handleUnlockRequest, handleLockRequest],
   );
+  
+  if (isLoading && !hasFetched) {
+    return <Loading />;
+  }
 
   return (
     <div
