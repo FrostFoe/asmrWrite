@@ -56,5 +56,3 @@ function ChallengeCard({
 }
 
 export default ChallengeCard;
-
-    

@@ -33,6 +33,7 @@ export const createNote = async (): Promise<Note> => {
     history: [],
     tags: [],
     isPinned: false,
+    isLocked: false,
   };
   await set(id, newNote);
   return newNote;
@@ -173,6 +174,7 @@ export const importNotes = (file: File): Promise<Note[]> => {
               history: noteData.history || [],
               tags: noteData.tags || [],
               isPinned: noteData.isPinned || false,
+              isLocked: noteData.isLocked || false,
             };
             validatedNotes.push(newNote);
           }

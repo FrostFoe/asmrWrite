@@ -5,6 +5,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 interface Settings {
   font: string;
+  passcode: string;
 }
 
 interface SettingsState extends Settings {
@@ -13,6 +14,7 @@ interface SettingsState extends Settings {
 
 const defaultSettings: Settings = {
   font: "font-hind-siliguri",
+  passcode: "",
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -26,6 +28,7 @@ export const useSettingsStore = create<SettingsState>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         font: state.font,
+        passcode: state.passcode,
       }),
     },
   ),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useSettingsStore } from "@/stores/use-settings";
 import {
   Card,
@@ -17,13 +17,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { clearAllNotes, exportNotes, importNotes } from "@/lib/storage";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useNotes } from "@/stores/use-notes";
-import { Upload, Download, Trash, Palette, Baseline } from "lucide-react";
+import { Upload, Download, Trash, Palette, Baseline, Lock } from "lucide-react";
 import { useTheme } from "next-themes";
 import {
   AlertDialog,
@@ -36,6 +37,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogClose,
+  DialogFooter,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const fonts = [
   { value: "font-tiro-bangla", label: "Tiro Bangla" },
@@ -44,8 +54,13 @@ const fonts = [
 ];
 
 export default function SettingsPage() {
-  const { font, setSetting } = useSettingsStore();
+  const { font, passcode, setSetting } = useSettingsStore();
   const { setTheme } = useTheme();
+
+  const [currentPasscode, setCurrentPasscode] = useState("");
+  const [newPasscode, setNewPasscode] = useState("");
+  const [confirmPasscode, setConfirmPasscode] = useState("");
+  const [error, setError] = useState("");
 
   const router = useRouter();
   const fontClass = font.split(" ")[0];
@@ -94,8 +109,42 @@ export default function SettingsPage() {
     router.push("/notes");
   };
 
+  const handlePasscodeChange = () => {
+    if (passcode && currentPasscode !== passcode) {
+      setError("বর্তমান পাসকোড সঠিক নয়।");
+      return;
+    }
+    if (newPasscode.length !== 4) {
+      setError("নতুন পাসকোড অবশ্যই ৪ সংখ্যার হতে হবে।");
+      return;
+    }
+    if (newPasscode !== confirmPasscode) {
+      setError("নতুন পাসকোড দুটি মিলেনি।");
+      return;
+    }
+
+    setSetting("passcode", newPasscode);
+    toast.success("পাসকোড সফলভাবে পরিবর্তন করা হয়েছে!");
+    setError("");
+    setCurrentPasscode("");
+    setNewPasscode("");
+    setConfirmPasscode("");
+    // Would be nice to close the dialog here. Need to manage state.
+  };
+
+  const handleRemovePasscode = () => {
+    if (currentPasscode !== passcode) {
+      setError("বর্তমান পাসকোড সঠিক নয়।");
+      return;
+    }
+    setSetting("passcode", "");
+    toast.success("পাসকোড সফলভাবে মুছে ফেলা হয়েছে!");
+    setError("");
+    setCurrentPasscode("");
+  };
+
   return (
-    <div className={cn("h-full space-y-8 p-4 sm:p-6 lg:p-8", fontClass)}>
+    <div className={cn("h-full space-y-8 p-4 sm:p-6 lg:pl-72 lg:p-8", fontClass)}>
       <header>
         <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           সেটিংস
@@ -207,6 +256,101 @@ export default function SettingsPage() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>নিরাপত্তা</CardTitle>
+            <CardDescription>
+              নোট লক করার জন্য পাসকোড পরিচালনা করুন।
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Lock className="mr-2 h-4 w-4" />
+                  {passcode ? "পাসকোড পরিবর্তন করুন" : "পাসকোড সেট করুন"}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    {passcode ? "পাসকোড পরিবর্তন করুন" : "নতুন পাসকোড সেট করুন"}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {passcode && (
+                    <Input
+                      type="password"
+                      placeholder="বর্তমান পাসকোড"
+                      value={currentPasscode}
+                      onChange={(e) => setCurrentPasscode(e.target.value)}
+                      maxLength={4}
+                    />
+                  )}
+                  <Input
+                    type="password"
+                    placeholder="নতুন ৪-সংখ্যার পাসকোড"
+                    value={newPasscode}
+                    onChange={(e) => setNewPasscode(e.target.value)}
+                    maxLength={4}
+                  />
+                  <Input
+                    type="password"
+                    placeholder="নতুন পাসকোড নিশ্চিত করুন"
+                    value={confirmPasscode}
+                    onChange={(e) => setConfirmPasscode(e.target.value)}
+                    maxLength={4}
+                  />
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      onClick={handlePasscodeChange}
+                    >
+                      সেভ করুন
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {passcode && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full">
+                    পাসকোড মুছে ফেলুন
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>পাসকোড নিশ্চিত করুন</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      পাসকোড মুছে ফেলার জন্য আপনার বর্তমান পাসকোডটি লিখুন। এই
+                      ক্রিয়াটি বাতিল করা যাবে না।
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <Input
+                    type="password"
+                    placeholder="বর্তমান পাসকোড"
+                    value={currentPasscode}
+                    onChange={(e) => setCurrentPasscode(e.target.value)}
+                    maxLength={4}
+                  />
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>বাতিল</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRemovePasscode}>
+                      নিশ্চিত করুন
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </CardContent>
         </Card>
       </div>

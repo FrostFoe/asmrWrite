@@ -79,7 +79,7 @@ export default function TrashPage() {
 
   return (
     <div
-      className={cn("h-full space-y-8 p-4 sm:p-6 lg:p-8", font.split(" ")[0])}
+      className={cn("h-full space-y-8 p-4 sm:p-6 lg:pl-72 lg:p-8", font.split(" ")[0])}
     >
       <header>
         <h1

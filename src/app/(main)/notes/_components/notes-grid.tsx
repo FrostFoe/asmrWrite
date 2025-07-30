@@ -7,6 +7,7 @@ import { NoteCard } from "./note-card";
 
 interface NotesGridProps {
   notes: Note[];
+  onUnlock: (noteId: string, callback: () => void) => void;
 }
 
 const containerVariants = {
@@ -19,7 +20,7 @@ const containerVariants = {
   },
 };
 
-function NotesGridComponent({ notes }: NotesGridProps) {
+function NotesGridComponent({ notes, onUnlock }: NotesGridProps) {
   return (
     <motion.div
       variants={containerVariants}
@@ -29,7 +30,7 @@ function NotesGridComponent({ notes }: NotesGridProps) {
     >
       <AnimatePresence>
         {notes.map((note) => (
-          <NoteCard key={note.id} note={note} />
+          <NoteCard key={note.id} note={note} onUnlock={onUnlock} />
         ))}
       </AnimatePresence>
     </motion.div>

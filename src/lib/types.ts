@@ -16,4 +16,5 @@ export interface Note {
   isTrashed: boolean;
   history?: NoteHistory[];
   isPinned: boolean;
+  isLocked: boolean;
 }

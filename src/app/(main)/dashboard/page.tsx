@@ -112,7 +112,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className={cn("h-full space-y-8 p-4 sm:p-6 lg:p-8", fontClass)}>
+    <div className="h-full space-y-8 p-4 sm:p-6 lg:pl-72 lg:p-8">
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -130,7 +130,7 @@ export default function DashboardPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+        className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
       >
         <StatCard title="মোট নোট" value={stats.totalNotes} icon={Book} />
         <StatCard
@@ -138,6 +138,7 @@ export default function DashboardPage() {
           value={stats.totalWords.toLocaleString()}
           icon={Type}
         />
+        <StatCard title="আজকের শব্দ" value={stats.wordsToday.toLocaleString()} icon={Target} />
         <StatCard title="ব্যবহৃত ট্যাগ" value={stats.totalTags} icon={Tag} />
       </motion.div>
 
@@ -185,5 +186,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

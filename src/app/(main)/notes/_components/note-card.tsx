@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo, useState, useEffect } from "react";
+import React, { memo, useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
@@ -28,7 +28,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Dialog,
@@ -42,25 +41,34 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Note } from "@/lib/types";
-import { getTextFromEditorJS, cn } from "@/lib/utils";
+import { getTextFromEditorJS, cn, calculateReadingTime } from "@/lib/utils";
 import { useSettingsStore } from "@/stores/use-settings";
 import { useNotes } from "@/stores/use-notes";
-import { MoreVertical, Edit, Trash2, Pin, PinOff, Tag, X } from "lucide-react";
+import {
+  MoreVertical,
+  Edit,
+  Trash2,
+  Pin,
+  PinOff,
+  Tag,
+  X,
+  Lock,
+  Unlock,
+  Clock,
+} from "lucide-react";
 import { toast } from "sonner";
 
-interface NoteCardProps {
+interface ManageTagsDialogProps {
   note: Note;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
 }
 
 function ManageTagsDialog({
   note,
   isOpen,
   onOpenChange,
-}: {
-  note: Note;
-  isOpen: boolean;
-  onOpenChange: (isOpen: boolean) => void;
-}) {
+}: ManageTagsDialogProps) {
   const { updateNote } = useNotes();
   const [tags, setTags] = useState<string[]>(note.tags || []);
   const [tagInput, setTagInput] = useState("");
@@ -157,7 +165,12 @@ function ManageTagsDialog({
   );
 }
 
-function NoteCardComponent({ note }: NoteCardProps) {
+interface NoteCardProps {
+  note: Note;
+  onUnlock: (noteId: string, callback: () => void) => void;
+}
+
+function NoteCardComponent({ note, onUnlock }: NoteCardProps) {
   const font = useSettingsStore((state) => state.font);
   const { trashNote, updateNote, togglePin, notes } = useNotes();
   const fontClass = font.split(" ")[0];
@@ -166,6 +179,8 @@ function NoteCardComponent({ note }: NoteCardProps) {
   const [isTagsOpen, setIsTagsOpen] = useState(false);
   const [newTitle, setNewTitle] = useState(note.title);
   const [formattedDate, setFormattedDate] = useState("");
+
+  const readingTime = useMemo(() => calculateReadingTime(note), [note]);
 
   useEffect(() => {
     if (note.updatedAt) {
@@ -178,10 +193,11 @@ function NoteCardComponent({ note }: NoteCardProps) {
     }
   }, [note.updatedAt]);
 
-  const contentPreview = React.useMemo(() => {
+  const contentPreview = useMemo(() => {
+    if (note.isLocked) return "এই নোটটি লক করা আছে।";
     const text = getTextFromEditorJS(note.content);
     return text.substring(0, 100) + (text.length > 100 ? "..." : "");
-  }, [note.content]);
+  }, [note.content, note.isLocked]);
 
   const handleTrash = () => {
     trashNote(note.id);
@@ -200,6 +216,15 @@ function NoteCardComponent({ note }: NoteCardProps) {
     );
   };
 
+  const handleToggleLock = useCallback(() => {
+    onUnlock(note.id, () => {
+      updateNote(note.id, { isLocked: !note.isLocked });
+      toast.success(
+        note.isLocked ? "নোটটি আনলক করা হয়েছে।" : "নোটটি লক করা হয়েছে।",
+      );
+    });
+  }, [note.id, note.isLocked, onUnlock, updateNote]);
+
   const handleRename = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) {
@@ -216,6 +241,16 @@ function NoteCardComponent({ note }: NoteCardProps) {
     visible: { opacity: 1, y: 0, scale: 1 },
     exit: { opacity: 0, y: -20, scale: 0.95 },
   };
+
+  const cardLink = note.isLocked ? "#" : `/editor/${note.id}`;
+  const onCardClick = note.isLocked
+    ? (e: React.MouseEvent) => {
+        e.preventDefault();
+        onUnlock(note.id, () => {
+          // Navigate after successful unlock
+        });
+      }
+    : undefined;
 
   return (
     <>
@@ -234,6 +269,7 @@ function NoteCardComponent({ note }: NoteCardProps) {
             note.isPinned
               ? "border-primary/50 shadow-primary/20"
               : "border-transparent",
+            note.isLocked ? "bg-muted/50" : "",
             fontClass,
           )}
         >
@@ -243,8 +279,11 @@ function NoteCardComponent({ note }: NoteCardProps) {
                 {note.isPinned && (
                   <Pin className="h-4 w-4 flex-shrink-0 text-primary" />
                 )}
+                {note.isLocked && (
+                  <Lock className="h-4 w-4 flex-shrink-0 text-destructive" />
+                )}
                 <CardTitle className="line-clamp-1 text-xl font-semibold">
-                  <Link href={`/editor/${note.id}`} className="hover:underline">
+                  <Link href={cardLink} className="hover:underline" onClick={onCardClick}>
                     {note.title || "শিরোনামহীন নোট"}
                   </Link>
                 </CardTitle>
@@ -279,9 +318,26 @@ function NoteCardComponent({ note }: NoteCardProps) {
                   )}
                 </DropdownMenuItem>
 
+                <DropdownMenuItem onSelect={handleToggleLock}>
+                  {note.isLocked ? (
+                    <>
+                      <Unlock className="mr-2 h-4 w-4" />
+                      <span>আনলক করুন</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="mr-2 h-4 w-4" />
+                      <span>লক করুন</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+
                 <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
                   <DialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      disabled={note.isLocked}
+                    >
                       <Edit className="mr-2 h-4 w-4" />
                       <span>রিনেম করুন</span>
                     </DropdownMenuItem>
@@ -304,7 +360,10 @@ function NoteCardComponent({ note }: NoteCardProps) {
                   </DialogContent>
                 </Dialog>
 
-                <DropdownMenuItem onSelect={() => setIsTagsOpen(true)}>
+                <DropdownMenuItem
+                  onSelect={() => setIsTagsOpen(true)}
+                  disabled={note.isLocked}
+                >
                   <Tag className="mr-2 h-4 w-4" />
                   <span>ট্যাগ এডিট করুন</span>
                 </DropdownMenuItem>
@@ -344,12 +403,13 @@ function NoteCardComponent({ note }: NoteCardProps) {
             </DropdownMenu>
           </CardHeader>
           <Link
-            href={`/editor/${note.id}`}
+            href={cardLink}
+            onClick={onCardClick}
             className="block h-full flex-grow p-6 pt-0"
           >
             <CardContent className="space-y-4 p-0">
               <p className="line-clamp-3 text-sm text-muted-foreground">
-                {contentPreview || "কোনও অতিরিক্ত বিষয়বস্তু নেই।"}
+                {contentPreview}
               </p>
               {note.tags && note.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
@@ -362,7 +422,11 @@ function NoteCardComponent({ note }: NoteCardProps) {
               )}
             </CardContent>
           </Link>
-          <CardFooter className="flex justify-end p-6 pt-0 text-xs text-muted-foreground">
+          <CardFooter className="flex items-center justify-between p-6 pt-0 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              {readingTime} মিনিট পড়া
+            </span>
             <span>{formattedDate}</span>
           </CardFooter>
         </Card>
@@ -376,14 +440,15 @@ function NoteCardComponent({ note }: NoteCardProps) {
   );
 }
 
-export const NoteCard = memo(NoteCardComponent, (prevProps, nextProps) => {
-  return (
+export const NoteCard = memo(
+  NoteCardComponent,
+  (prevProps, nextProps) =>
     prevProps.note.id === nextProps.note.id &&
     prevProps.note.title === nextProps.note.title &&
     prevProps.note.updatedAt === nextProps.note.updatedAt &&
     prevProps.note.isPinned === nextProps.note.isPinned &&
+    prevProps.note.isLocked === nextProps.note.isLocked &&
     JSON.stringify(prevProps.note.content) ===
       JSON.stringify(nextProps.note.content) &&
-    JSON.stringify(prevProps.note.tags) === JSON.stringify(nextProps.note.tags)
-  );
-});
+    JSON.stringify(prevProps.note.tags) === JSON.stringify(nextProps.note.tags),
+);
